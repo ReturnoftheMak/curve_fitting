@@ -31,7 +31,7 @@ def fit_curves():
 
     # Imports
     from sql_connection import sql_connection
-    from curve_fitting_functions import import_rates, arrays_to_fit, parameter_set, param_set_manipulation, export_params
+    from curve_fitting_functions import import_rates, arrays_to_fit, parameter_set, param_set_manipulation, export_params, second_degree_polynomial
 
     sqlcon = sql_connection(import_server_name, import_db_name)
 
@@ -39,7 +39,7 @@ def fit_curves():
 
     LTV, ELC = arrays_to_fit(df)
 
-    param_set = parameter_set(LTV, ELC)
+    param_set = parameter_set(LTV, ELC, second_degree_polynomial)
 
     params = param_set_manipulation(param_set)
 
