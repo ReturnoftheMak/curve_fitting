@@ -85,7 +85,7 @@ def second_degree_polynomial(x, a, b, c):
 
 #%% Return Parameters for each array
 
-def fit_curve(x_array, y_array):
+def fit_curve(x_array, y_array, func):
     """ Fits a curve to the arrays based on a second order polynomial
 
     Args:
@@ -96,14 +96,14 @@ def fit_curve(x_array, y_array):
         parameters
     """
 
-    params, param_cov = optimize.curve_fit(second_degree_polynomial, x_array, y_array)
+    params, param_cov = optimize.curve_fit(func, x_array, y_array)
 
     return params
 
 
 #%% Return parameter set for all arrays
 
-def parameter_set(LTV, ELC):
+def parameter_set(LTV, ELC, func):
     """ Returns a dictionary with all the curve parameters
 
     Args:
@@ -121,7 +121,7 @@ def parameter_set(LTV, ELC):
         x_array = LTV[key]
         y_array = ELC[key]
 
-        params = fit_curve(x_array, y_array)
+        params = fit_curve(x_array, y_array, func)
 
         param_set[key] = params
 
