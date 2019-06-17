@@ -50,7 +50,7 @@ def least_squares(x,y):
     
     params = fit_curve(x, y, lognormal_dist)
     
-    ((y - lognormal_dist(x, params[0], params[1], params[2]))**2).sum
+    ((y - lognormal_dist(x, params[0], params[1], params[2]))**2).sum()
     
 
 def mean_error(params, mean):
