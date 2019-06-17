@@ -53,14 +53,16 @@ def arrays_to_fit(df):
 
     # Loop through each credit rating to create curves for each
     for rating in df['Selected_Credit_Rating'].unique():
+        
+        for body_type in df['Category'].unique():
 
-        df_c = df[df['Selected_Credit_Rating'] == rating].reset_index()
-
-        x = df_c['Loan_To_Value_Ratio']
-        y = df_c['Expected_Loss_Cost']
-
-        LTV[rating] = x
-        ELC[rating] = y
+            df_c = df[(df['Selected_Credit_Rating'] == rating) & (df['Category'] == body_type)].reset_index()
+    
+            x = df_c['Loan_To_Value_Ratio']
+            y = df_c['Expected_Loss_Cost']
+    
+            LTV[rating+"_"+body_type] = x
+            ELC[rating+"_"+body_type] = y
 
     return LTV, ELC
 
