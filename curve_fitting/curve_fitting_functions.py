@@ -18,81 +18,81 @@ from scipy import optimize
 #%% Read in Table
 
 def import_rates(table_name, sqlcon, schema):
-    """ Import the data for fitting
+    """Import the data for fitting
 
     Args:
-        arg1 Tablename (str): SQL table name
-        arg2 sqlcon: connection to database
-        arg3 Schema: table schema
+        Tablename (str): SQL table name
+        sqlcon: connection to database
+        Schema: table schema
 
     Returns:
         dataframe
     """
 
-    df = pd.read_sql_table(table_name, sqlcon, schema=schema)
+    df_rates = pd.read_sql_table(table_name, sqlcon, schema=schema)
 
-    return df
+    return df_rates
 
 
 #%% Creating separate dfs
 
 # Add more loops for keys such as aircraft and term
 
-def arrays_to_fit(df):
-    """ Provides arrays for curve fitting from dataframe
+def arrays_to_fit(df_rates):
+    """Provides arrays for curve fitting from dataframe
 
     Args:
-        arg1 df (pandas.core.frame.DataFrame): from import_rates
+        df (pandas.core.frame.DataFrame): from import_rates
 
     Returns:
         Two dictionaries with keys of credit rating, values of arrays
     """
 
-    LTV = {}
-    ELC = {}
+    loan_to_value = {}
+    expected_loss_cost = {}
 
     # Loop through each credit rating to create curves for each
-    for rating in df['Selected_Credit_Rating'].unique():
-        
-        for body_type in df['Category'].unique():
+    for rating in df_rates['Selected_Credit_Rating'].unique():
 
-            df_c = df[(df['Selected_Credit_Rating'] == rating) & (df['Category'] == body_type)].reset_index()
-    
-            x = df_c['Loan_To_Value_Ratio']
-            y = df_c['Expected_Loss_Cost']
-    
-            LTV[rating+"_"+body_type] = x
-            ELC[rating+"_"+body_type] = y
+        for body_type in df_rates['Category'].unique():
 
-    return LTV, ELC
+            df_c = df_rates[(df_rates['Selected_Credit_Rating'] == rating) & (df_rates['Category'] == body_type)].reset_index()
+
+            x_array = df_c['Loan_To_Value_Ratio']
+            y_array = df_c['Expected_Loss_Cost']
+
+            loan_to_value[rating+"_"+body_type] = x_array
+            expected_loss_cost[rating+"_"+body_type] = y_array
+
+    return loan_to_value, expected_loss_cost
 
 
 #%% Second Degree Polynomial
 
-def second_degree_polynomial(x, a, b, c):
-    """ Simple form of order 2 polynomial
+def second_degree_polynomial(x_array, a_coef, b_coef, c_coef):
+    """Simple form of order 2 polynomial
 
     Args:
-        arg1 x: dependent variable
-        arg2 a: 2nd order coefficient
-        arg3 b: 1st order coefficient
-        arg4 c: constant
+        x: dependent variable
+        a: 2nd order coefficient
+        b: 1st order coefficient
+        c: constant
 
     Returns:
         y for y = ax^2 + bx + c
     """
 
-    return a*(x**2) + b*x + c
+    return a_coef*(x_array**2) + b_coef*x_array + c_coef
 
 
 #%% Return Parameters for each array
 
 def fit_curve(x_array, y_array, func):
-    """ Fits a curve to the arrays based on a second order polynomial
+    """Fits a curve to the arrays based on a second order polynomial
 
     Args:
-        arg1 x_array (pandas.core.series): dependent variable
-        arg2 y_array (pandas.core.series): independent variable
+        x_array (pandas.core.series): dependent variable
+        y_array (pandas.core.series): independent variable
 
     Returns:
         parameters
@@ -105,12 +105,12 @@ def fit_curve(x_array, y_array, func):
 
 #%% Return parameter set for all arrays
 
-def parameter_set(LTV, ELC, func):
-    """ Returns a dictionary with all the curve parameters
+def parameter_set(loan_to_value, expected_loss_cost, curve_func):
+    """Returns a dictionary with all the curve parameters
 
     Args:
-        arg1 LTV (dict): dictionary of credit rating keys and LTV arrays
-        arg2 ELC (dict): dictionary of credit rating keys and ELC arrays
+        LTV (dict): dictionary of credit rating keys and LTV arrays
+        ELC (dict): dictionary of credit rating keys and ELC arrays
 
     Returns:
         Dictionary with key of ratings, parameter sets as values
@@ -118,12 +118,12 @@ def parameter_set(LTV, ELC, func):
 
     param_set = {}
 
-    for key in LTV:
+    for key in loan_to_value:
 
-        x_array = LTV[key]
-        y_array = ELC[key]
+        x_array = loan_to_value[key]
+        y_array = expected_loss_cost[key]
 
-        params = fit_curve(x_array, y_array, func)
+        params = fit_curve(x_array, y_array, curve_func)
 
         param_set[key] = params
 
@@ -135,10 +135,10 @@ def parameter_set(LTV, ELC, func):
 # With aircraft and term added into the key, we'll need to split out the column in here and do some more renaming
 
 def param_set_manipulation(param_set):
-    """ Converts dictionary to dataframe
+    """Converts dictionary to dataframe
 
     Args:
-        arg1 param_set (dict): parameter dictionary
+        param_set (dict): parameter dictionary
 
     Returns:
         Parameter Dataframe
@@ -154,13 +154,13 @@ def param_set_manipulation(param_set):
 #%% Export to SQL
 
 def export_params(params, sqlcon, export_table_name, export_schema):
-    """ Export to sql, overwriting previous table
+    """Export to sql, overwriting previous table
 
     Args:
-        arg1 params: Dataframe of parameters
-        arg2 sqlcon: connection to database
-        arg3 export_table_name (str): table name to use
-        arg4 export_schema (str): schema to use
+        params: Dataframe of parameters
+        sqlcon: connection to database
+        export_table_name (str): table name to use
+        export_schema (str): schema to use
 
     Returns:
         none
