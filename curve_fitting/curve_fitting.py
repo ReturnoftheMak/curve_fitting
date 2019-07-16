@@ -9,21 +9,26 @@ Created on Tue Jun 11 11:38:00 2019
 
 
 #%% Set Variables
-import_server_name = 'tcspmSMDB01'
-import_db_name = 'AviationFinanceResults'
-table_name = 'AviationM'
-import_schema = 'avR'
-export_table_name = ''
-export_schema = ''
+IMPORT_SERVER_NAME = 'tcspmSMDB01'
+IMPORT_DB_NAME = 'AviationFinanceResults'
+TABLE_NAME = 'AviationM'
+IMPORT_SCHEMA = 'avR'
+EXPORT_TABLE_NAME = ''
+EXPORT_SCHEMA = ''
 
 
 #%% Define overall function
 
-def fit_curves():
+def fit_curves(import_server_name, import_db_name, table_name, import_schema, export_table_name, export_schema):
     """ Imports rates from SQL, fits curves, and exports the polynomial coefficients back to sql
 
     Args:
-        None
+        import_server_name:
+        import_db_name:
+        table_name
+        import_schema
+        export_table_name
+        export_schema
 
     Returns:
         None
@@ -35,11 +40,11 @@ def fit_curves():
 
     sqlcon = sql_connection(import_server_name, import_db_name)
 
-    df = import_rates(table_name, sqlcon, import_schema)
+    df_rates = import_rates(table_name, sqlcon, import_schema)
 
-    LTV, ELC = arrays_to_fit(df)
+    loan_to_value, expected_loss_cost = arrays_to_fit(df_rates)
 
-    param_set = parameter_set(LTV, ELC, second_degree_polynomial)
+    param_set = parameter_set(loan_to_value, expected_loss_cost, second_degree_polynomial)
 
     params = param_set_manipulation(param_set)
 
@@ -47,4 +52,4 @@ def fit_curves():
 
 
 if __name__ == "__main__":
-    fit_curves()
+    fit_curves(IMPORT_SERVER_NAME, IMPORT_DB_NAME, TABLE_NAME, IMPORT_SCHEMA, EXPORT_TABLE_NAME, EXPORT_SCHEMA)
