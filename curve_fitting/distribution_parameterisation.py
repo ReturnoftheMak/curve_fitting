@@ -76,9 +76,9 @@ def brute_force_solve(error_function, params):
     best_params = (1, 0, 1)
     best_sse = np.inf
 
-    shape = np.linspace(params_log['shape_min'], params_log['shape_max'], num=50)
-    loc = np.linspace(params_log['loc_min'], params_log['loc_max'], num=50)
-    scale = np.linspace(params_log['scale_min'], params_log['scale_max'], num=50)
+    shape = np.linspace(params['shape_min'], params['shape_max'], num=50)
+    loc = np.linspace(params['loc_min'], params['loc_max'], num=50)
+    scale = np.linspace(params['scale_min'], params['scale_max'], num=50)
 
     for i in shape:
         for j in loc:
