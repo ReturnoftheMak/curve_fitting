@@ -317,7 +317,6 @@ def parameter_solver(mean, variance, estimator_func, error_func):
                     best_sse = sse
         
     return best_params, best_sse
-    
 
 
 #%% Run Solver for a given estimator func and error func
